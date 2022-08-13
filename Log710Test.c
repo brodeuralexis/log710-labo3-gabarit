@@ -363,6 +363,7 @@ static continue_t handle_probe(int argc, char** argv)
 
     if (mem_is_allocated(pointer))
     {
+        *((char*) pointer) = 0x42;
         puts("VRAI");
     }
     else

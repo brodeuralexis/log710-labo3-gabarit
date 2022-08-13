@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.ejs": "html",
+        "*.h": "c",
+        "*.c": "c",
+        "limits": "c"
+    }
+}

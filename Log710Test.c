@@ -324,17 +324,8 @@ static continue_t handle_probe(int argc, char** argv)
     }
 
     char* arg1 = argv[1];
-    size_t arg1_len = strlen(arg1);
-
-    int base = 10;
-    if (arg1_len > 2 && arg1[0] == '0' && arg1[1] == 'x')
-    {
-        base = 16;
-        arg1 += 2;
-    }
-
     char* arg1_end;
-    void* pointer = (void*) strtoull(arg1, &arg1_end, base);
+    void* pointer = (void*) strtoull(arg1, &arg1_end, 0);
 
     if (*arg1_end != '\0')
     {
@@ -363,6 +354,9 @@ static continue_t handle_probe(int argc, char** argv)
 
     if (mem_is_allocated(pointer))
     {
+        // Probe.
+        //
+        // Ici, je m'assure que vous me dites la véritée.
         *((char*) pointer) = 0x42;
         puts("VRAI");
     }

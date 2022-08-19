@@ -4,8 +4,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include <stdlib.h>
-
 // IMPORTANT(Alexis Brodeur): Dans ce fichier, et tout code utilisé par ce fichier,
 // vous ne pouvez pas utiliser `malloc`, `free`, etc.
 
@@ -13,11 +11,12 @@ static struct {
     void*           ptr;
     size_t          len;
     mem_strategy_t  strategy;
+    // Libre à vous d'ajouter des champs pour le next-fit.
 } state;
 
 // IMPORTANT(Alexis Brodeur): Avant de commencer à implémenter le code de ce
 // laboratoire, discuter en équipe afin d'être sûr de tous avoir compris la
-// structure de données.
+// structure de données ce-dessous.
 
 typedef struct block {
     struct block*   previous;
@@ -57,41 +56,6 @@ static block_t* block_next(block_t* block)
     return NULL;
 }
 
-// NOTE(Alexis Brodeur): Si vous ne comprenez pas ces macros utilitaires, venez
-// me voir.
-
-/**
- * @brief Une macro permettant d'itérer sur tous les blocs.
- *
- * @code{C}
- * int size = 0;
- * FOR_EACH_BLOCK(block)
- * {
- *     size += block->size;
- * }
- * @endcode
- *
- * @param block Le nom du pointeur vers le bloc dans le corp de la boucle
- */
-#define FOR_EACH_BLOCK(block) \
-    for (block_t* block = block_first(); block != NULL; block = block_next(block))
-
-/**
- * @brief Une macro permettant d'itérer sur tous les blocs.
- *
- * @param block Le nom du pointeur vers le bloc dans le corp de la boucle
- */
-#define FOR_EACH_FREE_BLOCK(block) \
-    FOR_EACH_BLOCK(block) if (block->free)
-
-/**
- * @brief Une macro permettant d'itérer sur tous les blocs.
- *
- * @param block Le nom du pointeur vers le bloc dans le corp de la boucle
- */
-#define FOR_EACH_USED_BLOCK(block) \
-    FOR_EACH_BLOCK(block) if (!block->free)
-
 /**
  * @brief Acquiert un nombre d'octet du bloc dans le cadre d'une allocation de
  * mémoire.
@@ -108,7 +72,8 @@ static void block_acquire(block_t* block, size_t size)
     // TODO(Alexis Brodeur): À implémenter.
     //
     // IMPORTANT(Alexis Brodeur):
-    // Que faire si `block->size > size` ?
+    // Que faire si `block->size > size` ?  Utiliser les 1000 octets d'un bloc
+    // libre pour une allocation de 10 octets ne fait pas de sens.
 }
 
 /**
@@ -125,8 +90,8 @@ static void block_release(block_t* block)
     // TODO(Alexis Brodeur): À implémenter.
 
     // IMPORTANT(Alexis Brodeur):
-    // Que faire si le bloc précédent est libre ?
     // Que faire si le bloc suivant est libre ?
+    // Que faire si le bloc précédent est libre ?
 }
 
 void mem_init(size_t size, mem_strategy_t strategy)
@@ -138,6 +103,9 @@ void mem_init(size_t size, mem_strategy_t strategy)
     // TODO(Alexis Brodeur): Initialiser l'allocation de mémoire.
 
     // IMPORTANT(Alexis Brodeur): Combien avec-vous de blocs initialement ?
+
+    // IMPORTANT(Alexis Brodeur): Comment obtenir de la mémoire sans utiliser
+    // `malloc` ?
 }
 
 void mem_deinit(void)
@@ -226,9 +194,14 @@ bool mem_is_allocated(void* ptr)
 void mem_print_state(void)
 {
     // TODO(Alexis Brodeur): Imprimez l'état de votre structure de données.
-
-    // NOTE(Alexis Brodeur): Pensez à une représentation simple et facile à lire
-    // pour ma santée mentale lors de la correction.
+    //
+    //   - Affichez les blocs en ordre.
+    //   - Un bloc alloué commence par un 'A', tandis qu'un bloc libre commence
+    //     par 'F'.
+    //   - Après la lettre, imprimez la taille du bloc.
+    //   - Séparez les blocs par un espace.
+    //   - Cela ne dérange pas s'il y a un espace supplémentaire à la fin de la
+    //     ligne.
     //
     // Ex.:
     //

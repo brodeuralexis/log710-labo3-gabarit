@@ -8,10 +8,10 @@
 // vous ne pouvez pas utiliser `malloc`, `free`, etc.
 
 static struct {
-    void*           ptr;
-    size_t          len;
-    mem_strategy_t  strategy;
-    // Libre à vous d'ajouter des champs pour le next-fit.
+    void* ptr;
+    size_t len;
+    mem_strategy_t strategy;
+    // TODO(Alexis Brodeur): Ajouter au moins 1 champ pour le *next-fit*.
 } state;
 
 // IMPORTANT(Alexis Brodeur): Avant de commencer à implémenter le code de ce
@@ -19,9 +19,9 @@ static struct {
 // structure de données ce-dessous.
 
 typedef struct block {
-    struct block*   previous;
-    size_t          size;
-    bool            free;
+    struct block* previous;
+    size_t size;
+    bool free;
 } block_t;
 
 /**
@@ -46,7 +46,7 @@ static block_t* block_next(block_t* block)
 {
     // TODO(Alexis Brodeur): À implémenter.
 
-    ((void) block);
+    ((void)block);
 
     // IMPORTANT(Alexis Brodeur):
     // À partir d'un noeud, comment trouver le début du prochain noeud ?

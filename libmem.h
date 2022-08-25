@@ -6,8 +6,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-typedef enum
-{
+typedef enum {
     MEM_FIRST_FIT,
     MEM_BEST_FIT,
     MEM_WORST_FIT,

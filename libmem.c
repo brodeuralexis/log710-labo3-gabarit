@@ -48,11 +48,6 @@ static block_t* block_next(block_t* block)
 
     ((void)block);
 
-    // IMPORTANT(Alexis Brodeur):
-    // À partir d'un noeud, comment trouver le début du prochain noeud ?
-    //
-    // Commend déterminer si vous avez atteint la fin de la liste de noeuds ?
-
     return NULL;
 }
 

@@ -22,6 +22,8 @@ typedef struct block {
     struct block* previous;
     size_t size;
     bool free;
+    // NOTE(Alexis Brodeur): Vous pouvez ajouter des champs à cette structure de
+    // données, mais vous aller perdre des points pour la qualitée.
 } block_t;
 
 /**

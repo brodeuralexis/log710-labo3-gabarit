@@ -9,14 +9,19 @@
 
 #include "libmem.h"
 
-#define warn(fmt, ...)                                                           \
-    do {                                                                         \
-        fprintf(stderr, "[%s:%u] " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__); \
+#define DEFAULT_SIZE 1024
+#define ALLOCATE_BYTE 0xFE
+#define PROBE_BYTE 0x42
+#define COUNT_SMALL_SIZE 16
+
+#define WARN(fmt, ...)                                                                 \
+    do {                                                                               \
+        (void)fprintf(stderr, "[%s:%u] " fmt "\n", __FILE__, __LINE__, ##__VA_ARGS__); \
     } while (false)
 
-#define error(fmt, ...)           \
+#define ERROR(fmt, ...)           \
     do {                          \
-        warn(fmt, ##__VA_ARGS__); \
+        WARN(fmt, ##__VA_ARGS__); \
         exit(EXIT_FAILURE);       \
     } while (false)
 
@@ -25,7 +30,7 @@ struct {
     size_t size;
 } options = {
     .strategy = MEM_FIRST_FIT,
-    .size = 1024,
+    .size = DEFAULT_SIZE,
 };
 
 static void parse_options(int argc, char** argv);
@@ -51,11 +56,6 @@ int main(int argc, char** argv)
 {
     parse_options(argc, argv);
 
-    void* ptr = malloc(options.size);
-    if (ptr == NULL) {
-        error("failed to allocate memory");
-    }
-
     mem_init(options.size, options.strategy);
 
     char* line;
@@ -73,7 +73,7 @@ int main(int argc, char** argv)
         char** argv = malloc(sizeof(*argv) * (argc + 1));
         if (argv == NULL) {
             mem_deinit();
-            error("failed to allocate argv");
+            ERROR("failed to allocate argv");
         }
 
         char* arg = line;
@@ -85,11 +85,14 @@ int main(int argc, char** argv)
         continue_t result = handle_command(argc, argv);
         if (result == CONTINUE_WITH_STATE) {
             print_state();
-        } else if (result == EXIT) {
-            break;
         }
 
+        free(argv);
         free(line);
+
+        if (result == EXIT) {
+            break;
+        }
     }
 
     mem_deinit();
@@ -104,7 +107,7 @@ static continue_t handle_command(int argc, char** argv)
         command_t* command;
     } string_to_command_t;
 
-    static const string_to_command_t COMMANDS[] = {
+    static const string_to_command_t commands[] = {
         { "ALLOCATE", handle_allocate },
         { "A", handle_allocate },
         { "FREE", handle_free },
@@ -124,7 +127,7 @@ static continue_t handle_command(int argc, char** argv)
         return CONTINUE;
     }
 
-    for (const string_to_command_t* it = COMMANDS; it->string != NULL; it++) {
+    for (const string_to_command_t* it = commands; it->string != NULL; it++) {
         if (strcasecmp(it->string, argv[0]) == 0) {
             return it->command(argc, argv);
         }
@@ -152,6 +155,7 @@ static continue_t handle_allocate(int argc, char** argv)
         usage = true;
     }
 
+    // NOLINTNEXTLINE(cert-err34-c,clang-analyzer-core.CallAndMessage)
     long size = atol(argv[1]);
     if (size <= 0) {
         usage = true;
@@ -178,10 +182,10 @@ static continue_t handle_allocate(int argc, char** argv)
 
     allocation_t* allocation = malloc(sizeof(*allocation));
     if (allocation == NULL) {
-        error("failed to allocate memory for persisting allocation");
+        ERROR("failed to allocate memory for persisting allocation");
     }
 
-    memset(ptr, 0xFE, size);
+    memset(ptr, ALLOCATE_BYTE, size);
 
     allocation->id = ++allocation_id_sequence;
     allocation->ptr = ptr;
@@ -202,19 +206,20 @@ static continue_t handle_free(int argc, char** argv)
         usage = true;
     }
 
-    long id = atol(argv[1]);
-    if (id <= 0) {
+    // NOLINTNEXTLINE(cert-err34-c,clang-analyzer-core.CallAndMessage)
+    long identifier = atol(argv[1]);
+    if (identifier <= 0) {
         usage = true;
     }
 
     if (usage) {
         printf(
             "UTILISATION:\n"
-            "\t%s <id>\n"
+            "\t%s <i>\n"
             "\n"
             "ARGUMENTS:\n"
             "\n"
-            "\t<id> - L'identifiant de l'allocation à libérer.\n",
+            "\t<i> - L'identifiant de l'allocation à libérer.\n",
             argv[0]);
         return CONTINUE;
     }
@@ -223,7 +228,7 @@ static continue_t handle_free(int argc, char** argv)
     allocation_t* previous = NULL;
 
     while (current != NULL) {
-        if (current->id == (size_t)id) {
+        if (current->id == (size_t)identifier) {
             mem_free(current->ptr);
             allocation_t* next = current->next;
             free(current);
@@ -241,7 +246,7 @@ static continue_t handle_free(int argc, char** argv)
         current = current->next;
     }
 
-    printf("aucune allocation avec l'identifiant: %zu\n", id);
+    printf("aucune allocation avec l'identifiant: %zu\n", identifier);
     return CONTINUE;
 }
 
@@ -318,7 +323,7 @@ static continue_t handle_probe(int argc, char** argv)
         // Probe.
         //
         // Ici, je m'assure que vous me dites la véritée.
-        *((char*)pointer) = 0x42;
+        *((char*)pointer) = PROBE_BYTE;
         puts("VRAI");
     } else {
         puts("FAUX");
@@ -329,8 +334,8 @@ static continue_t handle_probe(int argc, char** argv)
 
 static void parse_options(int argc, char** argv)
 {
-    static const char* SHORTOPTS = ":s:n:h";
-    static const struct option LONGOPTS[] = {
+    static const char* shortopts = ":s:n:h";
+    static const struct option longopts[] = {
         { "strategy", required_argument, NULL, 's' },
         { "size", required_argument, NULL, 'n' },
         { "help", no_argument, NULL, 'h' },
@@ -342,7 +347,7 @@ static void parse_options(int argc, char** argv)
         mem_strategy_t strategy;
     } string_to_strategy_t;
 
-    static const string_to_strategy_t STRATEGIES[] = {
+    static const string_to_strategy_t strategies[] = {
         { "first-fit", MEM_FIRST_FIT },
         { "first", MEM_FIRST_FIT },
         { "f", MEM_FIRST_FIT },
@@ -361,33 +366,34 @@ static void parse_options(int argc, char** argv)
     bool usage = false;
 
     while (true) {
-        int c = getopt_long(argc, argv, SHORTOPTS, LONGOPTS, NULL);
+        int code = getopt_long(argc, argv, shortopts, longopts, NULL);
 
-        if (c == -1) {
+        if (code == -1) {
             break;
         }
 
-        switch (c) {
+        switch (code) {
         case 's': {
-            const string_to_strategy_t* it = STRATEGIES;
+            const string_to_strategy_t* strategy_it = strategies;
 
-            while (it->string != NULL) {
-                if (strcasecmp(it->string, optarg) == 0) {
+            while (strategy_it->string != NULL) {
+                if (strcasecmp(strategy_it->string, optarg) == 0) {
                     break;
                 }
 
-                it++;
+                strategy_it++;
             }
 
-            if (it->string == NULL) {
+            if (strategy_it->string == NULL) {
                 usage = true;
             } else {
-                options.strategy = it->strategy;
+                options.strategy = strategy_it->strategy;
             }
 
             break;
         }
         case 'n': {
+            // NOLINTNEXTLINE(cert-err34-c,clang-analyzer-core.CallAndMessage)
             long size = atol(optarg);
 
             if (size <= 0) {
@@ -405,7 +411,7 @@ static void parse_options(int argc, char** argv)
 
             break;
         default:
-            warn("getopt_long returned an unknown character code: %c", c);
+            WARN("getopt_long returned an unknown character code: %c", code);
             exit(EXIT_FAILURE);
             return;
         }
@@ -443,7 +449,7 @@ static void print_state()
     printf("# mem_get_allocated_block_count()   == %zu\n", mem_get_allocated_block_count());
     printf("# mem_get_free_bytes()              == %zu\n", mem_get_free_bytes());
     printf("# mem_get_biggest_free_block_size() == %zu\n", mem_get_biggest_free_block_size());
-    printf("# mem_count_small_free_blocks(16)   == %zu\n", mem_count_small_free_blocks(16));
+    printf("# mem_count_small_free_blocks(16)   == %zu\n", mem_count_small_free_blocks(COUNT_SMALL_SIZE));
     printf("# mem_print_state()                 => ");
     mem_print_state();
     printf("\n");

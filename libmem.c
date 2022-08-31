@@ -91,11 +91,12 @@ static void block_release(block_t* block)
     // Que faire si le bloc précédent est libre ?
 }
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void mem_init(size_t size, mem_strategy_t strategy)
 {
     assert(size > 0);
     assert(strategy >= 0);
-    assert(strategy < _NUM_MEM_STRATEGIES);
+    assert(strategy < NUM_MEM_STRATEGIES);
 
     // TODO(Alexis Brodeur): Initialiser l'allocation de mémoire.
 
@@ -166,12 +167,12 @@ size_t mem_get_biggest_free_block_size()
     return 0;
 }
 
-size_t mem_count_small_free_blocks(size_t maxBytes)
+size_t mem_count_small_free_blocks(size_t max_bytes)
 {
-    assert(maxBytes > 0);
+    assert(max_bytes > 0);
 
     // TODO(Alexis Brodeur): Indiquez combien de blocs de mémoire plus petit que
-    // `maxBytes` sont disponible.
+    // `max_bytes` sont disponible.
 
     return 0;
 }

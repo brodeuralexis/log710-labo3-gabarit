@@ -1,5 +1,5 @@
-#ifndef __LIBMEM__
-#define __LIBMEM__
+#ifndef LIBMEM
+#define LIBMEM
 
 // IMPORTANT(Alexis Brodeur): NE PAS MODIFIER CE FICHIER !
 
@@ -11,7 +11,7 @@ typedef enum {
     MEM_BEST_FIT,
     MEM_WORST_FIT,
     MEM_NEXT_FIT,
-    _NUM_MEM_STRATEGIES,
+    NUM_MEM_STRATEGIES,
 } mem_strategy_t;
 
 void mem_init(size_t size, mem_strategy_t strategy);
@@ -30,7 +30,7 @@ size_t mem_get_free_bytes();
 
 size_t mem_get_biggest_free_block_size();
 
-size_t mem_count_small_free_blocks(size_t maxBytes);
+size_t mem_count_small_free_blocks(size_t max_bytes);
 
 bool mem_is_allocated(void* ptr);
 

@@ -9,7 +9,12 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Log710Test",
-            "args": [],
+            "args": [
+                "-n",
+                "1024",
+                "-s",
+                "f"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -29,7 +34,12 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Log710Test",
-            "args": [],
+            "args": [
+                "-n",
+                "1024",
+                "-s",
+                "b"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -49,7 +59,12 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Log710Test",
-            "args": [],
+            "args": [
+                "-n",
+                "1024",
+                "-s",
+                "w"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
@@ -69,7 +84,12 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Log710Test",
-            "args": [],
+            "args": [
+                "-n",
+                "1024",
+                "-s",
+                "n"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

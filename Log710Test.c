@@ -206,6 +206,7 @@ static continue_t handle_free(int argc, char** argv)
         usage = true;
     }
 
+    // FIXME: The behaviour of atol is undefined when given NULL.
     // NOLINTNEXTLINE(cert-err34-c,clang-analyzer-core.CallAndMessage)
     long identifier = atol(argv[1]);
     if (identifier <= 0) {
